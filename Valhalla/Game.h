@@ -10,7 +10,7 @@ public:
 	CGame();
 	~CGame();
 
-	void Start();
+	void start();
 
 };
 

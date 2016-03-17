@@ -74,26 +74,33 @@ int main() {
 		while (true) {
 
 			// - MAIN MENU - //
-			PrintFromFile(3, 4, RED, "menu");
-			Menu->DrawLine(0, WIDTH, INV_HEIGHT);
-			printAt(iMenuX, iMenuY, TEAL, "1"); print(") Play the game"); iMenuY++;
-			printAt(iMenuX, iMenuY, TEAL, "2"); print(") Options"); iMenuY++;
-			printAt(iMenuX, iMenuY, TEAL, "3"); print(") Credits"); iMenuY++;
-			printAt(iMenuX, iMenuY, TEAL, "4"); print(") Exit"); iMenuY++;
-			
-			iMenuChoice = Cursor(iMenuCursorX, iMenuCursorY, 4, Gamepad);
-			
-			//printAt(iMenuX, iMenuY, "> ");
 
-			//iMenuChoice = GetChoice(" ", "Try again", iMenuX + 2, iMenuY, iMenuX, 1);
+			// Initializing main menu variables
+			iMenuChoice = 0;
+			iMenuX = 4;
+			iMenuY = INV_HEIGHT + 2;
+			iMenuCursorX = iMenuX - 2;
+			iMenuCursorY = iMenuY;
+
+			ClearScreen(1, 1, WIDTH - 1, HEIGHT - 2);
+
+			Menu->DrawLine(1, WIDTH, iMenuY - 2);
+
+			PrintFromFile(4, 4, RED, "menu");
+
+			// Choices
+			printAt(iMenuX, iMenuY, RED, "1"); print(") Play the game"); iMenuY++;
+			printAt(iMenuX, iMenuY, RED, "2"); print(") Options"); iMenuY++;
+			printAt(iMenuX, iMenuY, RED, "3"); print(") Credits"); iMenuY++;
+			printAt(iMenuX, iMenuY, RED, "4"); print(") Exit");
+
+			iMenuChoice = Cursor(iMenuCursorX, iMenuCursorY, 4, Gamepad);
 
 			// Start game
 			if (iMenuChoice == 1) {
 
 				CGame* game = new CGame;
-				game->Start();
-				Menu->DrawRectangle(40, 2, WIDTH - 3, 14, '$');
-				Menu->DrawRectangle(3, 15, 39, INV_HEIGHT - 1, '@');
+				game->start();
 
 				ConfirmRETURN(23, HEIGHT - 3, Gamepad);
 
@@ -101,9 +108,75 @@ int main() {
 			// Options
 			else if (iMenuChoice == 2) {
 
+				// Initializing options menu variables
+				iOptionChoice = 0;
+				iOptionX = 4;
+				iOptionY = 14;
+				iOptionCursorX = iOptionX - 2;
+				iOptionCursorY = iOptionY;
+
 				ClearScreen(1, 1, WIDTH - 1, HEIGHT - 2);
-				PrintFromFile(5, 4, TEAL, "options");
-				iOptionChoice = Cursor(iOptionCursorX, iOptionCursorY, 4, Gamepad);
+				Menu->DrawLine(1, WIDTH - 1, iOptionY - 2);
+				Menu->DrawLine(1, WIDTH - 1, iOptionY + 4);
+
+				PrintFromFile(4, 4, TEAL, "options");
+				//printAt(iOptionX, iOptionY, RED, "1"); print(") Enable tutorial"); iOptionY++;
+				printAt(iOptionX, iOptionY, RED, "1"); print(") Toggle gamepad"); iOptionY++;
+				printAt(iOptionX, iOptionY, RED, "2"); print(") Back to main menu");
+
+				// Choices
+				while (true) {
+
+					// Print gamepad state
+					if (Gamepad->IsConnected()) {
+
+						printAt(50, iOptionY - 1, WHITE, "[");
+
+						if (Gamepad->IsActive()) {
+							printAt(iOptionCursorX, iOptionCursorY + 1, " ");
+							printAt(51, iOptionY - 1, GREEN, "ON ");
+							printAt(53, iOptionY - 1, WHITE, "] ");
+						}
+						else {
+							printAt(iOptionCursorX, iOptionCursorY + 1, " ");
+							printAt(51, iOptionY - 1, RED, "OFF");
+							printAt(54, iOptionY - 1, WHITE, "]");
+						}
+
+					}
+					else {
+						print(RED, "NOT FOUND");
+					}
+
+					iOptionChoice = Cursor(iOptionCursorX, iOptionCursorY, 2, Gamepad);
+
+					if (iOptionChoice == 1) {
+
+						// Gamepad found
+						if (Gamepad->IsConnected()) {
+
+							if (Gamepad->IsActive()) {
+								Gamepad->SetIsActive(false);
+							}
+							else {
+								Gamepad->SetIsActive(true);
+							}
+
+						}
+						// Gamepad not found
+						else {
+							printAt(iOptionX, iOptionY + 1, "Gamepad not found! Try again.");
+						}
+
+					}
+					else {
+						break;
+					}
+
+					iOptionChoice = 0;
+
+				}
+
 				break;
 
 			}
@@ -111,9 +184,9 @@ int main() {
 			else if (iMenuChoice == 3) {
 
 				ClearScreen(1, 1, WIDTH - 1, HEIGHT - 2);
-				PrintFromFile(5, 8, TEAL , "credits_1");
-				PrintFromFile(5, 20, WHITE, "credits_2");
-				ConfirmRETURN(23, HEIGHT - 3, Gamepad);
+				PrintFromFile(4, 8, RED, "credits_1");
+				PrintFromFile(4, 20, WHITE, "credits_2");
+				ConfirmRETURN(25, HEIGHT - 3, Gamepad);
 				ClearScreen(1, 1, WIDTH - 1, HEIGHT - 2);
 				break;
 
@@ -122,16 +195,11 @@ int main() {
 			else if (iMenuChoice == 4) {
 
 				ClearScreen(1, 1, WIDTH - 1, HEIGHT - 2);
-				PrintFromFile(5, 4, RED, "exit");
-				ConfirmRETURN(23, HEIGHT - 3, Gamepad);
+				PrintFromFile(4, 10, RED, "exit");
+				ConfirmRETURN(25, HEIGHT - 3, Gamepad);
 				ClearScreen(1, 1, WIDTH - 1, HEIGHT - 2);
 				bIsRunning = false;
 				break;
-
-			}
-			else {
-
-				printAt(iMenuX + 2, iMenuY, " ");
 
 			}
 

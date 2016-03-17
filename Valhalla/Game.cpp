@@ -11,7 +11,7 @@ CGame::~CGame()
 {
 }
 
-void CGame::Start() {
+void CGame::start() {
 
 	
 

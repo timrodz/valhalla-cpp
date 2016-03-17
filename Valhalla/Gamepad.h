@@ -29,13 +29,11 @@ static const WORD XINPUT_Buttons[] = {
 };
 
 // XInput Button IDs
-struct XButtonIDs
-{
-	// Function prototypes
-	//---------------------//
+struct XButtonIDs {
 
 	// 'XButtonIDs' - Default constructor
 	XButtonIDs::XButtonIDs() {
+
 		// These values are used to index the XINPUT_Buttons array,
 		// accessing the matching XINPUT button value
 
@@ -55,14 +53,13 @@ struct XButtonIDs
 		L_Thumbstick = 10;
 		R_Thumbstick = 11;
 
-		Start = 12;
-		Back = 13;
+		start = 12;
+		back = 13;
+
 	};
 
-	// Member variables
-	//---------------------//
-
-	int A, B, X, Y; // 'Action' buttons
+	// 'Action' buttons
+	int A, B, X, Y; 
 
 	// Directional Pad (D-Pad)
 	int DPad_Up, DPad_Down, DPad_Left, DPad_Right;
@@ -73,8 +70,8 @@ struct XButtonIDs
 	// Thumbstick buttons
 	int L_Thumbstick, R_Thumbstick;
 
-	int Start; // 'START' button
-	int Back;  // 'BACK' button
+	int start; // 'START' button
+	int back;  // 'BACK' button
 
 };
 
@@ -82,7 +79,9 @@ class CGamepad {
 
 public:
 	CGamepad(int _iIndex);
-	//XButtonIDs XButtons;
+
+	void Update();       // Update gamepad state
+	void RefreshState(); // Update button states for next frame
 
 	// Determine the state of the gamepad
 	XINPUT_STATE GetState();
@@ -104,13 +103,23 @@ public:
 	float RightStick_X(); // Return X axis of right stick
 	float RightStick_Y(); // Return Y axis of right stick
 
-	// Determine whether or not a certain button is pressed
-	bool IsDown(int _iButton);
+	// Button functions
+	// - 'Pressed' - Return true if pressed, false if not
+	// - 'Down'    - Same as 'Pressed', but ONLY on current frame
+	bool IsButtonPressed(int _iButton);
+	bool IsButtonDown(int _iButton);
 
 private:
 	XINPUT_STATE m_state; // Current gamepad state
 	int m_iGamepadIndex;  // Gamepad index (1 - 4)
-	bool m_bIsActive;
+	bool m_bIsActive;     // Whether or not the gamepad is enabled
+	
+	static const int ButtonCount = 14;    // Total gamepad buttons
+	bool bPrev_ButtonStates[ButtonCount]; // Previous frame button states
+	bool bButtonStates[ButtonCount];      // Current frame button states
+
+	// Buttons pressed on current frame
+	bool bGamepad_ButtonsDown[ButtonCount];
 
 };
 

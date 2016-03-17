@@ -40,9 +40,9 @@ COORD coord;
 void SetWindowSize(int _iWidth, int _iHeight) {
 
 	SMALL_RECT rect;
-	COORD coord = { 
-		(short)_iWidth, 
-		(short)_iHeight 
+	COORD coord = {
+		(short)_iWidth,
+		(short)_iHeight
 	};
 
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -64,8 +64,8 @@ void SetWindowSize(int _iWidth, int _iHeight) {
 
 }
 
-// Setting the color for our screen
-// @param _color the color code
+// Setting the color for text
+// @param _iColor the color code
 // @return void
 void SetColor(int _iColor) {
 
@@ -101,10 +101,11 @@ void gotoxy(int _iX, int _iY, bool _bHideCursor) {
 
 }
 
-// Clearing the console on the right side of the screen
-// @param _iX the 'x' coordinate to print at
-// @param _iYmin the minimum 'y' position to start clearing
-// @param _iYmax the maximum 'y' position to stop clearing at
+// Clearing the console on a specific part of the screen
+// @param _startX the first position of x
+// @param _startY the first position of y
+// @param _endX the last position of x
+// @param _endY the last position of y
 // @return void
 void ClearScreen(int _startX, int _startY, int _endX, int _endY) {
 
@@ -221,99 +222,124 @@ std::string GetText(int _iX, int _iY, int _iLim) {
 // Receiving input directly from a keyboard or gamepad
 int Cursor(int _iX, int _iY, int _iChoices, CGamepad* _gamepad) {
 
-	int lastY = _iY;
+	SetColor(WHITE);
+
+	int iLastY = _iY;
 	int tempY = _iY;
-	int choice = 1;
+	int iChoice = 1;
+
+	char cKey;
+
+	bool hasPressedAKey = false;
 
 	printAt(_iX, _iY, ">");
 
-	// TODO:
-	// Optimize the "going back to first/last option part"
 	while (true) {
 
 		// Gamepad control
-		if ((_gamepad->IsConnected()) && (_gamepad->IsActive())){
+		if ((_gamepad->IsConnected()) && (_gamepad->IsActive())) {
+
+			_gamepad->Update();
 
 			// Go up
-			if ((_gamepad->LeftStick_Y() > 0.5f) || (_gamepad->IsDown(g_button.DPad_Up))) {
+			if ((_gamepad->LeftStick_Y() > 0.5f) || (_gamepad->IsButtonDown(g_button.DPad_Up))) {
 
-				printAt(_iX, lastY, " ");
+				printAt(_iX, iLastY, " ");
 				_iY--;
-				lastY = _iY;
+				iLastY = _iY;
 				printAt(_iX, _iY, ">");
-				choice--;
-
-				// Go back to the last option
-				if (_iY == tempY - 1) {
-
-					printAt(_iX, _iY, " ");
-					choice = 4;
-					_iY = tempY + _iChoices - 1;
-					lastY = _iY;
-					printAt(_iX, _iY, ">");
-
-				}
-
-				Sleep(150);
-				//break;
+				iChoice--;
+				hasPressedAKey = true;
 
 			}
 			// Go down
-			else if ((_gamepad->LeftStick_Y() < -0.5f) || (_gamepad->IsDown(g_button.DPad_Down))) {
+			else if ((_gamepad->LeftStick_Y() < -0.5f) || (_gamepad->IsButtonDown(g_button.DPad_Down))) {
 
-				printAt(_iX, lastY, " ");
+				printAt(_iX, iLastY, " ");
 				_iY++;
-				lastY = _iY;
+				iLastY = _iY;
 				printAt(_iX, _iY, ">");
-				choice++;
-
-				// Go back to the first option
-				if (_iY == tempY + _iChoices) {
-
-					printAt(_iX, _iY, " ");
-					choice = 1;
-					_iY = tempY;
-					lastY = _iY;
-					printAt(_iX, _iY, ">");
-
-				}
-
-				Sleep(150);
-				//break;
+				iChoice++;
+				hasPressedAKey = true;
 
 			}
 
-			if (_gamepad->IsDown(g_button.A)) {
+			if (_gamepad->IsButtonDown(g_button.A)) {
 
-				return choice;
+				_gamepad->Update();
+				_gamepad->RefreshState();
+				return iChoice;
 
 			}
+
+			_gamepad->RefreshState();
 
 		}
 		// Keyboard control
+		// Character codes
+		// 72 = UP
+		// 80 = DOWN
+		// 13 = ENTER
 		else {
 
-			//printAt()
+			cKey = _getch();
+
+			// Up
+			if (cKey == 72) {
+
+				printAt(_iX, iLastY, " ");
+				_iY--;
+				iLastY = _iY;
+				printAt(_iX, _iY, ">");
+				iChoice--;
+				hasPressedAKey = true;
+
+			}
+			else if (cKey == 80) {
+
+				printAt(_iX, iLastY, " ");
+				_iY++;
+				iLastY = _iY;
+				printAt(_iX, _iY, ">");
+				iChoice++;
+				hasPressedAKey = true;
+
+			}
+			else if (cKey == 13) {
+
+				return iChoice;
+
+			}
 
 		}
 
-		
-		
+		// Go back to the last option
+		if (_iY == tempY - 1) {
 
-		/*printAt(_iX, lastY, " ");
-		lastY = _iY;
-		printAt(_iX, _iY, ">");*/
+			printAt(_iX, _iY, " ");
+			iChoice = 4;
+			_iY = tempY + _iChoices - 1;
+			iLastY = _iY;
+			printAt(_iX, _iY, ">");
 
-		/*gotoxy(2, 1, 1);
-		std::cout << "Gamepad [" << std::to_string(_gamepad->GetIndex()) << "] connected!";
-		gotoxy(2, 2, 1);
-		std::cout << "Left Y Axis: " << std::to_string(_gamepad->LeftStick_Y());
-		gotoxy(2, 4, 1);
-		std::cout << "_iY: " << _iY;
-		gotoxy(2, 5, 1);
-		std::cout << "Choice: " << choice;*/
+		}
+		// Go back to the first option
+		else if (_iY == tempY + _iChoices) {
 
+			printAt(_iX, _iY, " ");
+			iChoice = 1;
+			_iY = tempY;
+			iLastY = _iY;
+			printAt(_iX, _iY, ">");
 
+		}
+
+		if (hasPressedAKey == true) {
+
+			hasPressedAKey = false;
+			Sleep(150);
+
+		}
 
 	}
 
@@ -392,27 +418,40 @@ void PrintFromFile(int _iX, int _iY, int _iColor, std::string _fileName) {
 void ConfirmRETURN(int _iX, int _iY, CGamepad* _gamepad) {
 
 	printAt(_iX, _iY, WHITE, "Press ");
-	print(GREEN, "ENTER / RETURN");
-	print(WHITE, " to continue> ");
+	print(GREEN, "ENTER");
+	print(WHITE, " / ");
+	print(GREEN, "(A)");
+	print(WHITE, " to continue");
 
 	while (true) {
 
 		// Gamepad
 		if ((_gamepad->IsConnected()) && (_gamepad->IsActive())) {
 
-			if (_gamepad->IsDown(g_button.A)) {
+			_gamepad->Update();
+
+			if (_gamepad->IsButtonDown(g_button.A)) {
 				break;
 			}
+
+			_gamepad->RefreshState();
 
 		}
 		// Keyboard
 		else {
 
-			if (_getch() == 13) {
+			printAt(_iX, _iY, WHITE, "Press ");
+			print(RED, "ENTER / RETURN");
+			print(WHITE, " to continue> ");
+
+			while (_getch() != 13) {
 				break;
 			}
-	
+
 		}
+
 	}
+
+
 
 }

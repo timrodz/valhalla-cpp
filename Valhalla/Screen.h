@@ -44,14 +44,14 @@ enum eColor {
 // Setting the size of the window
 void SetWindowSize(int _iWidth, int _iHeight);
 
-// Setting the color for our screen
+// Setting the color for text
 void SetColor(int _iColor);
 
 // Going to a desired position in the screen
 // Hiding the cursor is optional
 void gotoxy(int _iX, int _iY, bool _bHideCursor);
 
-// Clearing the console on the right side of the screen
+// Clearing the console on a specific part of the screen
 void ClearScreen(int _startX, int _startY, int _endX, int _endY);
 
 // String to Integer conversion, used in menu options
